@@ -1,0 +1,5 @@
+Firmware for the MicroMouse, running on the RP2040 microcontroller.
+
+The /mouselib/ directory contains code for the main mouse library. It contains code for all essential functionality.
+
+The /programs/ directory contains code for various programs that can be run on the mouse. The program 'main' is the primary program for the mouse. The other programs are intended for testing purposes.
