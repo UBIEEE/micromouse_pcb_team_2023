@@ -14,7 +14,7 @@ function(build_program name)
   set(INC_DIR "${PROGRAM_DIR}/include")
 
   # Source files.
-  file(GLOB_RECURSE SRC "${SRC_DIR}/*.c")
+  file(GLOB_RECURSE SRC "${SRC_DIR}/*.c" "${SRC_DIR}/*.cpp")
 
   # Make sure the program has source files.
   # Better to fail here than for the linker to fail dramatically later on.
