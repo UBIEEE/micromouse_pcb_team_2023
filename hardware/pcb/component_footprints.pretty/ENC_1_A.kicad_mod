@@ -12,6 +12,8 @@
       (effects (font (size 1 1) (thickness 0.15)))
     (tstamp bc102daf-3ab1-4a35-b60e-7c2505aebf25)
   )
+  (fp_rect (start -1 -7) (end 1 7)
+    (stroke (width 0.1) (type default)) (fill none) (layer "F.SilkS") (tstamp 581f262f-21dd-466e-9423-832382d73a00))
   (pad "1" thru_hole oval (at 0 5.75 90) (size 1.6 1.2) (drill oval 1.2 0.8) (layers "*.Cu" "*.Mask") (tstamp 294930bc-189d-4279-887c-83ecdfa8f0e0))
   (pad "2" smd rect (at -0.6 2 90) (size 0.54 0.8) (layers "F.Cu" "F.Paste" "F.Mask") (tstamp f24e8a17-93c6-4fde-ac2b-141bf1522fb8))
   (pad "3" smd rect (at 0.6 2 90) (size 0.54 0.8) (layers "F.Cu" "F.Paste" "F.Mask") (tstamp 6b2f5416-cd22-45c0-af75-38dc3221666c))
