@@ -22,6 +22,10 @@ function(build_program name)
     message(FATAL_ERROR "Program '${name}' has no source files")
   endif()
 
+  # Set compile flags for source files.
+  # I can't set it normally because the Pico SDK can't handle it.
+  set_source_files_properties(${SRC} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Werror -pedantic")
+
   # Build executable.
   add_executable(${name} ${SRC})
 

@@ -5,9 +5,9 @@
 #define PIN_BTN_2 1
 
 // SPI 0
-#define PIN_IMU_SCLK 2
-#define PIN_IMU_MOSI 3
-#define PIN_IMU_MISO 4
+#define PIN_IMU_R_ENC_SCLK 2
+#define PIN_IMU_R_ENC_MOSI 3
+#define PIN_IMU_R_ENC_MISO 4
 #define PIN_IMU_CS   5
 
 #define PIN_L_MOT_PH 6
@@ -16,12 +16,12 @@
 #define PIN_R_MOT_PH 8
 #define PIN_R_MOT_EN 9
 
-// SPI 1
-#define PIN_R_ENC_SCLK 10
-#define PIN_R_ENC_MOSI 11
-#define PIN_R_ENC_MISO 12
-#define PIN_R_ENC_CS   13
+// 10 - Unused
 
+#define PIN_R_ENC_CS 11
+
+// 12 - Unused
+// 13 - Unused
 // 14 - Unused
 // 15 - Unused
 
