@@ -33,10 +33,9 @@ endif()
 # Pico SDK.
 pico_sdk_init()
 
-# Compile options.
-add_compile_options(-Wall -Werror -Wno-format -Wno-unused-function)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  add_compile_options(-Wno-maybe-uninitialized)
+# Make sure GNU compiler is used.
+if (NOT CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  message(FATAL_ERROR "Invalid compiler ID: '${CMAKE_C_COMPILER_ID}', GNU compiler is required.")
 endif()
 
 # Build library
