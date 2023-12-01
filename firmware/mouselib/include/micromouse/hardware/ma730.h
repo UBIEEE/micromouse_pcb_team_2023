@@ -3,16 +3,16 @@
 
 #include <micromouse/micromouse.h>
 
-#define MA730_ANGLE_INVALID (-1.f)
-
 struct ma730_dev {
   spi_inst_t* spi;
   uint8_t cs;
 };
 typedef struct ma730_dev ma730_dev_t;
 
+#define MA730_ANGLE_INVALID (-1.f)
+
 //
-// Initializes the MA730 encoder.
+// Initializes a MA730 encoder.
 //
 // Important: The SPI instance must be initialized prior to calling this.
 //

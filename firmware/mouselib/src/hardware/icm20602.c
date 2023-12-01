@@ -231,7 +231,7 @@ result_t icm20602_read_gyro(icm20602_dev_t* dev, float* x, float* y, float* z) {
   result_t result = read_axes_raw(dev, REG_GYRO_XOUT_H, &raw_x, &raw_y, &raw_z);
   RETURN_IF_ERROR(result);
 
-  // Convert to radians per second.
+  // Convert to degrees per second, then to radians per second.
   *x = ((float)raw_x / (float)INT16_MAX) * gyro_range * M_PI_180;
   *y = ((float)raw_y / (float)INT16_MAX) * gyro_range * M_PI_180;
   *z = ((float)raw_z / (float)INT16_MAX) * gyro_range * M_PI_180;
@@ -250,9 +250,10 @@ result_t icm20602_read_accel(icm20602_dev_t* dev, float* x, float* y, float* z) 
   result_t result = read_axes_raw(dev, REG_ACCEL_XOUT_H, &raw_x, &raw_y, &raw_z);
   RETURN_IF_ERROR(result);
 
-  *x = ((float)raw_x / (float)INT16_MAX) * accel_range;
-  *y = ((float)raw_y / (float)INT16_MAX) * accel_range;
-  *z = ((float)raw_z / (float)INT16_MAX) * accel_range;
+  // Convert to gravities, then remove the acceleration due to gravity to get m/s^2.
+  *x = (((float)raw_x / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
+  *y = (((float)raw_y / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
+  *z = (((float)raw_z / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
 
   return RESULT_OK;
 }

@@ -90,6 +90,8 @@ struct icm20602_dev {
 };
 typedef struct icm20602_dev icm20602_dev_t;
 
+#define ICM20602_INVALID_VALUE (-1.f)
+
 //
 // Initializes an ICM20602 IMU.
 //
@@ -98,19 +100,17 @@ typedef struct icm20602_dev icm20602_dev_t;
 result_t icm20602_init(icm20602_dev_t* dev, spi_inst_t* spi, uint8_t cs_pin,
                        const icm20602_config_t* config);
 
-#define ICM20602_INVALID_VALUE -1.f
-
 //
 // Reads the gyro values from the IMU.
 //
-// The values are represented in radians per second.
+// Gyro value units are radians per second.
 //
 result_t icm20602_read_gyro(icm20602_dev_t* dev, float* x, float* y, float* z);
 
 //
 // Reads the accelerometer values from the IMU.
 //
-// The values are represented in m/s^2.
+// Accelerometer value units are meters per second squared.
 //
 result_t icm20602_read_accel(icm20602_dev_t* dev, float* x, float* y, float* z);
 
