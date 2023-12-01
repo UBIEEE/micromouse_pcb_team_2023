@@ -64,3 +64,5 @@ endfunction()
 #
 add_program(main ON)
 add_program(hello OFF)
+add_program(imu_test OFF)
+add_program(encoder_test OFF)

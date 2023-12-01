@@ -3,11 +3,14 @@
 #include <pico/stdlib.h>
 #include <stdio.h>
 
-int main() {
-  stdio_init_all();
+int main(void) {
+  if (!stdio_init_all()) {
+    (void)puts("stdio_init_all() failed");
+    return -1;
+  }
 
   while (1) {
-    puts("Hello World");
+    (void)puts("Hello World");
     sleep_ms(1000);
   }
 }
