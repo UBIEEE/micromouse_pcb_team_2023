@@ -10,14 +10,14 @@
 // --- Initialization ---
 //
 
-static result_t init_spi(void);
 static result_t init_encoders(drivetrain_t* drivetrain);
 static result_t init_imu(drivetrain_t* drivetrain);
+static result_t init_motor_driver(drivetrain_t* drivetrain);
 
 result_t drivetrain_init(drivetrain_t* drivetrain) {
   result_t r = RESULT_OK;
 
-  r = init_spi();
+  r = drivetrain_init_spi();
   RETURN_IF_ERROR(r);
 
   r = init_encoders(drivetrain);
@@ -26,10 +26,13 @@ result_t drivetrain_init(drivetrain_t* drivetrain) {
   r = init_imu(drivetrain);
   RETURN_IF_ERROR(r);
 
+  r = init_motor_driver(drivetrain);
+  RETURN_IF_ERROR(r);
+
   return r;
 }
 
-static result_t init_spi(void) {
+result_t drivetrain_init_spi(void) {
   // Set SPI baud rate.
   if (SPI_BAUD_RATE != spi_set_baudrate(spi0, SPI_BAUD_RATE)) {
     return RESULT_ERROR;
@@ -94,6 +97,17 @@ static result_t init_imu(drivetrain_t* drivetrain) {
   return r;
 }
 
+static result_t init_motor_driver(drivetrain_t* drivetrain) {
+  result_t r = RESULT_OK;
+
+  r = drv8835_init(&drivetrain->motor_driver, PIN_L_MOT_PH, PIN_L_MOT_EN, PIN_R_MOT_PH,
+                   PIN_R_MOT_EN);
+
+  RETURN_IF_ERROR(r);
+
+  return r;
+}
+
 //
 // --- Periodic stuff ---
 //
@@ -117,6 +131,8 @@ void drivetrain_process(drivetrain_t* drivetrain) {
 
   // Update IMU.
   update_imu(drivetrain);
+
+  drv8835_set_output(&drivetrain->motor_driver, 0.f, 0.f);
 }
 
 static float calc_angle_delta(const float angle, const float last_angle) {

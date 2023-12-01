@@ -4,6 +4,7 @@
 #include <micromouse/micromouse.h>
 #include <micromouse/hardware/ma730.h>
 #include <micromouse/hardware/icm20602.h>
+#include <micromouse/hardware/drv8835.h>
 
 struct drivetrain {
   ma730_dev_t left_encoder;
@@ -26,6 +27,8 @@ struct drivetrain {
   float imu_accel_x;
   float imu_accel_y;
   float imu_accel_z;
+
+  drv8835_dev_t motor_driver;
 };
 typedef struct drivetrain drivetrain_t;
 
@@ -33,6 +36,11 @@ typedef struct drivetrain drivetrain_t;
 // Initializes the drivetrain hardware.
 //
 result_t drivetrain_init(drivetrain_t* drivetrain);
+
+//
+// Initializes the spi0 instance used by the encoders and IMU.
+//
+result_t drivetrain_init_spi(void);
 
 //
 // Handles the drivetrain's periodic tasks.

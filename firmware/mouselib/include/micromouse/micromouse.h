@@ -16,12 +16,12 @@
 #include <string.h>
 
 #include <hardware/spi.h>
+#include <hardware/pwm.h>
 #include <pico/stdlib.h>
 
 #pragma GCC diagnostic pop
 
 #include <micromouse/result.h>
-
-#define M_PI_180 0.01745329252f
+#include <micromouse/constants.h>
 
 #endif // __MICROMOUSE_H__
