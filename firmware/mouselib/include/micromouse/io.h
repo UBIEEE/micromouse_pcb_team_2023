@@ -8,7 +8,7 @@
 #define PIN_IMU_R_ENC_SCLK 2
 #define PIN_IMU_R_ENC_MOSI 3
 #define PIN_IMU_R_ENC_MISO 4
-#define PIN_IMU_CS   5
+#define PIN_IMU_CS         5
 
 #define PIN_L_MOT_PH 6
 #define PIN_L_MOT_EN 7
@@ -45,3 +45,4 @@
 #define PIN_ADC_3 29
 
 #endif // __MICROMOUSE_IO_H__
+

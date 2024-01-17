@@ -1,7 +1,8 @@
 #ifndef __MICROMOUSE_ICM20602_H__
 #define __MICROMOUSE_ICM20602_H__
 
-#include <micromouse/micromouse.h>
+#include <micromouse/result.h>
+#include <micromouse/std.h>
 
 //
 // Datasheet:
@@ -94,25 +95,33 @@ typedef struct icm20602_dev icm20602_dev_t;
 
 //
 // Initializes an ICM20602 IMU.
+// The program will exit if the device could not be initialized.
 //
 // Important: The SPI instance must be initialized prior to calling this.
 //
-result_t icm20602_init(icm20602_dev_t* dev, spi_inst_t* spi, uint8_t cs_pin,
-                       const icm20602_config_t* config);
+icm20602_dev_t icm20602_init(spi_inst_t* spi, uint8_t cs_pin,
+                             const icm20602_config_t* config);
+
+struct icm20602_data {
+  float x;
+  float y;
+  float z;
+};
+typedef struct icm20602_data icm20602_data_t;
 
 //
 // Reads the gyro values from the IMU.
 //
 // Gyro value units are radians per second.
 //
-result_t icm20602_read_gyro(icm20602_dev_t* dev, float* x, float* y, float* z);
+icm20602_data_t icm20602_read_gyro(icm20602_dev_t* dev);
 
 //
 // Reads the accelerometer values from the IMU.
 //
 // Accelerometer value units are meters per second squared.
 //
-result_t icm20602_read_accel(icm20602_dev_t* dev, float* x, float* y, float* z);
+icm20602_data_t icm20602_read_accel(icm20602_dev_t* dev);
 
 #endif // __MICROMOUSE_ICM20602_H__
 

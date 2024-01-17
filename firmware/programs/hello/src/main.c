@@ -1,16 +1,13 @@
-#include <micromouse/micromouse.h>
-
-#include <pico/stdlib.h>
-#include <stdio.h>
+#include <micromouse/std.h>
 
 int main(void) {
-  if (!stdio_init_all()) {
-    (void)puts("stdio_init_all() failed");
-    return -1;
-  }
+  if (!stdio_init_all()) return 1;
 
   while (1) {
-    (void)puts("Hello World");
+    (void)puts("Hello, world!");
     sleep_ms(1000);
   }
+
+  return 0;
 }
+

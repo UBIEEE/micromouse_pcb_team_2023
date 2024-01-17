@@ -1,5 +1,8 @@
 #include <micromouse/hardware/icm20602.h>
 
+#include <micromouse/constants.h>
+#include <micromouse/diagnostics.h>
+
 #define REG_XG_OFFS_TC_H       0x04
 #define REG_XG_OFFS_TC_L       0x05
 #define REG_YG_OFFS_TC_H       0x07
@@ -71,133 +74,139 @@
 #define CS_IDLE   1
 #define CS_ACTIVE 0
 
-static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, uint8_t len);
-static result_t write_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, uint8_t len);
+static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf,
+                              uint8_t len);
+static result_t write_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf,
+                               uint8_t len);
 
-result_t icm20602_init(icm20602_dev_t* dev, spi_inst_t* spi, const uint8_t cs_pin,
-                       const icm20602_config_t* cfg) {
-  (void)cfg;
+icm20602_dev_t icm20602_init(spi_inst_t* spi, const uint8_t cs_pin,
+                             const icm20602_config_t* config) {
+  if (!spi || !config) DIAG_REPORT_INVALID_ARG();
+
+  result_t res = RESULT_OK;
+
+  icm20602_dev_t dev = {
+      .spi    = spi,
+      .cs     = cs_pin,
+      .config = *config,
+  };
+
   // Initialize pins.
   gpio_init(cs_pin);
   gpio_set_dir(cs_pin, GPIO_OUT);
   gpio_put(cs_pin, CS_IDLE);
 
-  dev->spi = spi;
-  dev->cs  = cs_pin;
-
   uint8_t tmp = 0x00;
-  uint8_t r   = 0;
 
   // Reset.
   tmp = 0x80;
-  r   = write_register(dev, REG_PWR_MGMT_1, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  res = write_register(&dev, REG_PWR_MGMT_1, &tmp, 1);
+  if (res) exit(1);
 
   // TODO: Sleep 1000
 
   // Read something.
-  r = read_register(dev, REG_WHO_AM_I, &tmp, 1);
+  res = read_register(&dev, REG_WHO_AM_I, &tmp, 1);
+  if (res) exit(1);
+
   if (tmp != REG_WHO_AM_I_CONST) {
-    r = RESULT_ERROR;
+    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                         "ICM20602 WHO_AM_I mismatch");
+    exit(1);
   }
-  RETURN_IF_ERROR(r);
 
   // Set clock to internal PLL.
   tmp = 0x01;
-  r   = write_register(dev, REG_PWR_MGMT_1, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  res = write_register(&dev, REG_PWR_MGMT_1, &tmp, 1);
+  if (res) exit(1);
 
   // Place accel and gryo on standby.
   tmp = 0x3F;
-  r   = write_register(dev, REG_PWR_MGMT_2, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  res = write_register(&dev, REG_PWR_MGMT_2, &tmp, 1);
+  if (res) exit(1);
 
   // Disable FIFO.
   tmp = 0x00;
-  r   = write_register(dev, REG_USER_CTRL, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  res = write_register(&dev, REG_USER_CTRL, &tmp, 1);
+  if (res) exit(1);
 
   // Enable accelerometer.
-  if (ICM20602_ACCEL_DLPF_BYPASS_1046_HZ == cfg->accel_dlpf) {
+  if (ICM20602_ACCEL_DLPF_BYPASS_1046_HZ == config->accel_dlpf) {
     tmp = (1 << 3);
-    r   = write_register(dev, REG_ACCEL_CONFIG_2, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    res = write_register(&dev, REG_ACCEL_CONFIG_2, &tmp, 1);
   } else {
-    tmp = cfg->accel_dlpf;
-    r   = write_register(dev, REG_ACCEL_CONFIG_2, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    tmp = config->accel_dlpf;
+    res = write_register(&dev, REG_ACCEL_CONFIG_2, &tmp, 1);
   }
-  tmp = (cfg->accel_range << 2);
-  r   = write_register(dev, REG_ACCEL_CONFIG, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  if (res) exit(1);
+
+  tmp = (config->accel_range << 2);
+  res = write_register(&dev, REG_ACCEL_CONFIG, &tmp, 1);
+  if (res) exit(1);
 
   // Enable gyro.
-  if (ICM20602_GYRO_DLPF_BYPASS_3281_HZ == cfg->gyro_dlpf) {
+  if (ICM20602_GYRO_DLPF_BYPASS_3281_HZ == config->gyro_dlpf) {
     // Bypass DLPF.
     tmp = 0x00;
-    r   = write_register(dev, REG_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    res = write_register(&dev, REG_CONFIG, &tmp, 1);
+    if (res) exit(1);
 
     // Set range.
-    tmp = (cfg->gyro_range << 3) | 0x02;
-    r   = write_register(dev, REG_GYRO_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
-  } else if (ICM20602_GYRO_DLPF_BYPASS_8173_HZ == cfg->gyro_dlpf) {
+    tmp = (config->gyro_range << 3) | 0x02;
+    res = write_register(&dev, REG_GYRO_CONFIG, &tmp, 1);
+    if (res) exit(1);
+
+  } else if (ICM20602_GYRO_DLPF_BYPASS_8173_HZ == config->gyro_dlpf) {
     // Bypass DLPF.
     tmp = 0x00;
-    r   = write_register(dev, REG_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    res = write_register(&dev, REG_CONFIG, &tmp, 1);
+    if (res) exit(1);
 
     // Set range.
-    tmp = (cfg->gyro_range << 3) | 0x01;
-    r   = write_register(dev, REG_GYRO_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    tmp = (config->gyro_range << 3) | 0x01;
+    res = write_register(&dev, REG_GYRO_CONFIG, &tmp, 1);
+    if (res) exit(1);
   } else {
     // Configure DLPF.
-    tmp = cfg->gyro_dlpf;
-    r   = write_register(dev, REG_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    tmp = config->gyro_dlpf;
+    res = write_register(&dev, REG_CONFIG, &tmp, 1);
+    if (res) exit(1);
 
     // Set range.
-    tmp = cfg->gyro_range << 3;
-    r   = write_register(dev, REG_GYRO_CONFIG, &tmp, 1);
-    RETURN_IF_ERROR(r);
+    tmp = config->gyro_range << 3;
+    res = write_register(&dev, REG_GYRO_CONFIG, &tmp, 1);
+    if (res) exit(1);
   }
 
   // No FIFO.
-  tmp = (cfg->accel_fifo) ? 0x08 : 0x00;
-  tmp |= (cfg->gyro_fifo) ? 0x10 : 0x00;
-  r = write_register(dev, REG_FIFO_EN, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  tmp = (config->accel_fifo) ? 0x08 : 0x00;
+  tmp |= (config->gyro_fifo) ? 0x10 : 0x00;
+  res = write_register(&dev, REG_FIFO_EN, &tmp, 1);
+  if (res) exit(1);
 
   // Sample rate divider.
-  tmp = (cfg->sample_rate_divider) ? (cfg->sample_rate_divider - 1) : 1;
-  r   = write_register(dev, REG_SMPLRT_DIV, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  tmp = (config->sample_rate_divider) ? (config->sample_rate_divider - 1) : 1;
+  res = write_register(&dev, REG_SMPLRT_DIV, &tmp, 1);
+  if (res) exit(1);
 
   tmp = 0;
-  r   = write_register(dev, REG_PWR_MGMT_2, &tmp, 1);
-  RETURN_IF_ERROR(r);
+  res = write_register(&dev, REG_PWR_MGMT_2, &tmp, 1);
+  if (res) exit(1);
 
-  return r;
+  return dev;
 }
 
 //
 // Read three axes from the ICM20602.
 //
-static result_t read_axes_raw(icm20602_dev_t* dev, const int8_t addr, int16_t* x, int16_t* y,
-                              int16_t* z) {
-  if (!dev || !x || !y || !z) {
-    return RESULT_INVALID_ARG;
-  }
+static result_t read_axes_raw(icm20602_dev_t* dev, const int8_t addr,
+                              int16_t* x, int16_t* y, int16_t* z) {
+  if (!dev || !x || !y || !z) DIAG_REPORT_INVALID_ARG();
 
   uint8_t buf[6];
 
-  result_t result = read_register(dev, addr, buf, 6);
-  if (result) {
-    *x = *y = *z = ICM20602_INVALID_VALUE;
-    return result;
-  }
+  result_t res = read_register(dev, addr, buf, 6);
+  if (res) return RESULT_ERROR;
 
   *x = (buf[0] << 8) | buf[1];
   *y = (buf[2] << 8) | buf[3];
@@ -220,48 +229,56 @@ static const float ACCEL_RANGES[4] = {
     [ICM20602_ACCEL_RANGE_16_G] = 16.f,
 };
 
-result_t icm20602_read_gyro(icm20602_dev_t* dev, float* x, float* y, float* z) {
-  if (!dev || !x || !y || !z) {
-    return RESULT_INVALID_ARG;
-  }
+icm20602_data_t icm20602_read_gyro(icm20602_dev_t* dev) {
+  if (!dev) DIAG_REPORT_INVALID_ARG();
+
+  icm20602_data_t data = {
+      .x = ICM20602_INVALID_VALUE,
+      .y = ICM20602_INVALID_VALUE,
+      .z = ICM20602_INVALID_VALUE,
+  };
 
   const float gyro_range = GYRO_RANGES[dev->config.gyro_range];
 
   int16_t raw_x, raw_y, raw_z;
-  result_t result = read_axes_raw(dev, REG_GYRO_XOUT_H, &raw_x, &raw_y, &raw_z);
-  RETURN_IF_ERROR(result);
+  result_t res = read_axes_raw(dev, REG_GYRO_XOUT_H, &raw_x, &raw_y, &raw_z);
+  if (res) return data;
 
   // Convert to degrees per second, then to radians per second.
-  *x = ((float)raw_x / (float)INT16_MAX) * gyro_range * M_PI_180;
-  *y = ((float)raw_y / (float)INT16_MAX) * gyro_range * M_PI_180;
-  *z = ((float)raw_z / (float)INT16_MAX) * gyro_range * M_PI_180;
+  data.x = ((float)raw_x / (float)INT16_MAX) * gyro_range * M_PI_180;
+  data.y = ((float)raw_y / (float)INT16_MAX) * gyro_range * M_PI_180;
+  data.z = ((float)raw_z / (float)INT16_MAX) * gyro_range * M_PI_180;
 
-  return RESULT_OK;
+  return data;
 }
 
-result_t icm20602_read_accel(icm20602_dev_t* dev, float* x, float* y, float* z) {
-  if (!dev || !x || !y || !z) {
-    return RESULT_INVALID_ARG;
-  }
+icm20602_data_t icm20602_read_accel(icm20602_dev_t* dev) {
+  if (!dev) DIAG_REPORT_INVALID_ARG();
+
+  icm20602_data_t data = {
+      .x = ICM20602_INVALID_VALUE,
+      .y = ICM20602_INVALID_VALUE,
+      .z = ICM20602_INVALID_VALUE,
+  };
 
   const float accel_range = ACCEL_RANGES[dev->config.accel_range];
 
   int16_t raw_x, raw_y, raw_z;
-  result_t result = read_axes_raw(dev, REG_ACCEL_XOUT_H, &raw_x, &raw_y, &raw_z);
-  RETURN_IF_ERROR(result);
+  result_t res = read_axes_raw(dev, REG_ACCEL_XOUT_H, &raw_x, &raw_y, &raw_z);
+  if (res) return data;
 
-  // Convert to gravities, then remove the acceleration due to gravity to get m/s^2.
-  *x = (((float)raw_x / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
-  *y = (((float)raw_y / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
-  *z = (((float)raw_z / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
+  // Convert to gravities, then remove the acceleration due to gravity to get
+  // m/s^2.
+  data.x = (((float)raw_x / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
+  data.y = (((float)raw_y / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
+  data.z = (((float)raw_z / (float)INT16_MAX) * accel_range) / GRAVITY_ACCEL;
 
-  return RESULT_OK;
+  return data;
 }
 
-static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, uint8_t len) {
-  if (!dev || !buf || !len) {
-    return RESULT_INVALID_ARG;
-  }
+static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf,
+                              uint8_t len) {
+  if (!dev || !buf || !len) DIAG_REPORT_INVALID_ARG();
 
   const uint8_t cmd   = reg | 0x80; // MSB 1 for read.
   const uint8_t dummy = 0x00;
@@ -269,18 +286,27 @@ static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, ui
   gpio_put(dev->cs, CS_ACTIVE);
 
   if (1 != spi_write_blocking(dev->spi, &cmd, 1)) {
-    return RESULT_SPI_COMM_ERROR;
+    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                         "ICM20602 read_register() failed: "
+                         "could not write command byte");
+    return RESULT_ERROR;
   }
 
   for (uint8_t i = 0; i < len; i++) {
     // Send dummy byte.
     if (1 != spi_write_blocking(dev->spi, &dummy, 1)) {
-      return RESULT_SPI_COMM_ERROR;
+      diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                           "ICM20602 read_register() failed: "
+                           "could not write dummy byte");
+      return RESULT_ERROR;
     }
 
     // Read byte.
     if (1 != spi_read_blocking(dev->spi, 0, &buf[i], 1)) {
-      return RESULT_SPI_COMM_ERROR;
+      diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                           "ICM20602 read_register() failed: "
+                           "could not read byte");
+      return RESULT_ERROR;
     }
   }
 
@@ -289,21 +315,26 @@ static result_t read_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, ui
   return RESULT_OK;
 }
 
-static result_t write_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf, uint8_t len) {
-  if (!dev || !buf || !len) {
-    return RESULT_INVALID_ARG;
-  }
+static result_t write_register(icm20602_dev_t* dev, uint8_t reg, uint8_t* buf,
+                               uint8_t len) {
+  if (!dev || !buf || !len) DIAG_REPORT_INVALID_ARG();
 
   const uint8_t cmd = reg & 0x7F; // MSB 0 for write.
 
   gpio_put(dev->cs, CS_ACTIVE);
 
   if (1 != spi_write_blocking(dev->spi, &cmd, 1)) {
-    return RESULT_SPI_COMM_ERROR;
+    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                         "ICM20602 write_register() failed: "
+                         "could not write command byte");
+    return RESULT_ERROR;
   }
 
   if (len != spi_write_blocking(dev->spi, buf, len)) {
-    return RESULT_SPI_COMM_ERROR;
+    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                         "ICM20602 write_register() failed: "
+                         "could not write data");
+    return RESULT_ERROR;
   }
 
   gpio_put(dev->cs, CS_IDLE);
