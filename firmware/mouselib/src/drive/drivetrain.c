@@ -1,6 +1,8 @@
-#include <micromouse/drivetrain.h>
+#include <micromouse/drive/drivetrain.h>
 
+#include <micromouse/diagnostics.h>
 #include <micromouse/io.h>
+#include <micromouse/macros.h>
 
 // IMU max baud rate is 10MHz.
 // Encoder max baud rate is 25MHz.
@@ -10,32 +12,24 @@
 // --- Initialization ---
 //
 
-static result_t init_encoders(drivetrain_t* drivetrain);
-static result_t init_imu(drivetrain_t* drivetrain);
-static result_t init_motor_driver(drivetrain_t* drivetrain);
+static void init_encoders(drivetrain_t* drivetrain);
+static void init_imu(drivetrain_t* drivetrain);
+static void init_motor_driver(drivetrain_t* drivetrain);
 
-result_t drivetrain_init(drivetrain_t* drivetrain) {
-  result_t r = RESULT_OK;
+void drivetrain_init(drivetrain_t* drivetrain) {
+  drivetrain_init_spi();
 
-  r = drivetrain_init_spi();
-  RETURN_IF_ERROR(r);
-
-  r = init_encoders(drivetrain);
-  RETURN_IF_ERROR(r);
-
-  r = init_imu(drivetrain);
-  RETURN_IF_ERROR(r);
-
-  r = init_motor_driver(drivetrain);
-  RETURN_IF_ERROR(r);
-
-  return r;
+  init_encoders(drivetrain);
+  init_imu(drivetrain);
+  init_motor_driver(drivetrain);
 }
 
-result_t drivetrain_init_spi(void) {
+void drivetrain_init_spi(void) {
   // Set SPI baud rate.
   if (SPI_BAUD_RATE != spi_set_baudrate(spi0, SPI_BAUD_RATE)) {
-    return RESULT_ERROR;
+    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
+                         "Failed to set SPI baud rate");
+    exit(1);
   }
 
   // Set format.
@@ -52,33 +46,21 @@ result_t drivetrain_init_spi(void) {
   gpio_set_function(PIN_L_ENC_SCLK, GPIO_FUNC_SPI);
   gpio_set_function(PIN_L_ENC_MOSI, GPIO_FUNC_SPI);
   gpio_set_function(PIN_L_ENC_MISO, GPIO_FUNC_SPI);
-
-  return RESULT_OK;
 }
 
-static result_t init_encoders(drivetrain_t* drivetrain) {
-  result_t r = RESULT_OK;
-
-  r = ma730_init(&drivetrain->left_encoder, spi0, PIN_L_ENC_CS);
-  RETURN_IF_ERROR(r);
-  r = ma730_init(&drivetrain->right_encoder, spi0, PIN_R_ENC_CS);
-  RETURN_IF_ERROR(r);
+static void init_encoders(drivetrain_t* drivetrain) {
+  drivetrain->left_encoder  = ma730_init(spi0, PIN_L_ENC_CS);
+  drivetrain->right_encoder = ma730_init(spi0, PIN_R_ENC_CS);
 
   // Read initial angles.
-  r = ma730_read_angle(&drivetrain->left_encoder, &drivetrain->left_last_angle);
-  RETURN_IF_ERROR(r);
-  r = ma730_read_angle(&drivetrain->right_encoder, &drivetrain->right_last_angle);
-  RETURN_IF_ERROR(r);
+  drivetrain->left_angle  = ma730_read_angle(&drivetrain->left_encoder);
+  drivetrain->right_angle = ma730_read_angle(&drivetrain->right_encoder);
 
   drivetrain->left_last_angle  = drivetrain->left_angle;
   drivetrain->right_last_angle = drivetrain->right_angle;
-
-  return r;
 }
 
-static result_t init_imu(drivetrain_t* drivetrain) {
-  result_t r = RESULT_OK;
-
+static void init_imu(drivetrain_t* drivetrain) {
   const icm20602_config_t imu_config = {
       .accel_dlpf  = ICM20602_ACCEL_DLPF_10_2_HZ, // Just guessing here.
       .accel_range = ICM20602_ACCEL_RANGE_4_G,
@@ -91,21 +73,12 @@ static result_t init_imu(drivetrain_t* drivetrain) {
       .sample_rate_divider = 100, // ????
   };
 
-  r = icm20602_init(&drivetrain->imu, spi0, PIN_IMU_CS, &imu_config);
-  RETURN_IF_ERROR(r);
-
-  return r;
+  drivetrain->imu = icm20602_init(spi0, PIN_IMU_CS, &imu_config);
 }
 
-static result_t init_motor_driver(drivetrain_t* drivetrain) {
-  result_t r = RESULT_OK;
-
-  r = drv8835_init(&drivetrain->motor_driver, PIN_L_MOT_PH, PIN_L_MOT_EN, PIN_R_MOT_PH,
-                   PIN_R_MOT_EN);
-
-  RETURN_IF_ERROR(r);
-
-  return r;
+static void init_motor_driver(drivetrain_t* drivetrain) {
+  drivetrain->motor_driver =
+      drv8835_init(PIN_L_MOT_PH, PIN_L_MOT_EN, PIN_R_MOT_PH, PIN_R_MOT_EN);
 }
 
 //
@@ -118,8 +91,9 @@ static result_t init_motor_driver(drivetrain_t* drivetrain) {
 //
 static float calc_angle_delta(float angle, float last_angle);
 
-static result_t update_encoder_angle(ma730_dev_t* dev, float* angle, float* last_angle);
-static result_t update_imu(drivetrain_t* drivetrain);
+static void update_encoder_angle(ma730_dev_t* dev, float* angle,
+                                 float* last_angle);
+static void update_imu(drivetrain_t* drivetrain);
 
 void drivetrain_process(drivetrain_t* drivetrain) {
   // Update encoder angles.
@@ -148,12 +122,10 @@ static float calc_angle_delta(const float angle, const float last_angle) {
   return delta;
 }
 
-static result_t update_encoder_angle(ma730_dev_t* dev, float* angle, float* last_angle) {
-  float local_angle = 0.f;
+static void update_encoder_angle(ma730_dev_t* dev, float* angle,
+                                 float* last_angle) {
 
-  // Read local angle.
-  result_t result = ma730_read_angle(dev, &local_angle);
-  RETURN_IF_ERROR(result);
+  const float local_angle = ma730_read_angle(dev);
 
   // Calculate delta.
   const float delta = calc_angle_delta(local_angle, *last_angle);
@@ -161,40 +133,15 @@ static result_t update_encoder_angle(ma730_dev_t* dev, float* angle, float* last
   // Update angle.
   *angle += delta;
   *last_angle = local_angle;
-
-  return RESULT_OK;
 }
 
-static result_t update_imu(drivetrain_t* drivetrain) {
-  result_t result = RESULT_OK;
-  float *x, *y, *z;
-
-  //
+static void update_imu(drivetrain_t* drivetrain) {
   // Gyro.
-  //
-  x = &drivetrain->imu_gyro_x;
-  y = &drivetrain->imu_gyro_y;
-  z = &drivetrain->imu_gyro_z;
-
-  result = icm20602_read_gyro(&drivetrain->imu, x, y, z);
-  GOTO_IF_ERROR(result, error_leave);
+  drivetrain->imu_gyro_data = icm20602_read_gyro(&drivetrain->imu);
 
   // TODO: Integrate gyro readings to get angle.
 
-  //
   // Accelerometer.
-  //
-  x = &drivetrain->imu_accel_x;
-  y = &drivetrain->imu_accel_y;
-  z = &drivetrain->imu_accel_z;
-
-  result = icm20602_read_accel(&drivetrain->imu, x, y, z);
-  GOTO_IF_ERROR(result, error_leave);
-
-  return result;
-
-error_leave:
-  *x = *y = *z = 0.f;
-  return result;
+  drivetrain->imu_accel_data = icm20602_read_accel(&drivetrain->imu);
 }
 
