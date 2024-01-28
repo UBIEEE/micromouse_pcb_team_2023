@@ -1,7 +1,6 @@
 #ifndef __MICROMOUSE_ICM20602_H__
 #define __MICROMOUSE_ICM20602_H__
 
-#include <micromouse/result.h>
 #include <micromouse/std.h>
 
 //
@@ -95,7 +94,7 @@ typedef struct icm20602_dev icm20602_dev_t;
 
 //
 // Initializes an ICM20602 IMU.
-// The program will exit if the device could not be initialized.
+// The program will halt if the device could not be initialized.
 //
 // Important: The SPI instance must be initialized prior to calling this.
 //
@@ -109,19 +108,36 @@ struct icm20602_data {
 };
 typedef struct icm20602_data icm20602_data_t;
 
+enum icm20602_axis {
+  ICM20602_AXIS_X = 0,
+  ICM20602_AXIS_Y = 2,
+  ICM20602_AXIS_Z = 4,
+};
+typedef enum icm20602_axis icm20602_axis_t;
+
 //
 // Reads the gyro values from the IMU.
-//
-// Gyro value units are radians per second.
+// Gyro value units are degrees per second.
 //
 icm20602_data_t icm20602_read_gyro(icm20602_dev_t* dev);
 
 //
-// Reads the accelerometer values from the IMU.
+// Reads a gyro value from the IMU.
+// Gyro value units are degrees per second.
 //
+float icm20602_read_gyro_axis(icm20602_dev_t* dev, icm20602_axis_t axis);
+
+//
+// Reads the accelerometer values from the IMU.
 // Accelerometer value units are meters per second squared.
 //
 icm20602_data_t icm20602_read_accel(icm20602_dev_t* dev);
+
+//
+// Reads an accelerometer value from the IMU.
+// Accelerometer value units are meters per second squared.
+//
+float icm20602_read_accel_axis(icm20602_dev_t* dev, icm20602_axis_t axis);
 
 #endif // __MICROMOUSE_ICM20602_H__
 

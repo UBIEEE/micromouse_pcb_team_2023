@@ -1,6 +1,7 @@
 #ifndef __MICROMOUSE_STD_H__
 #define __MICROMOUSE_STD_H__
 
+// Appease the pico sdk by letting it do unsafe things.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 
@@ -16,6 +17,8 @@
 
 #include <hardware/pwm.h>
 #include <hardware/spi.h>
+#include <hardware/irq.h>
+#include <pico/multicore.h>
 #include <pico/stdlib.h>
 
 #pragma GCC diagnostic pop

@@ -1,13 +1,13 @@
 #include <micromouse/hardware/ma730.h>
 
 #include <micromouse/constants.h>
-#include <micromouse/diagnostics.h>
+#include <micromouse/macros.h>
 
 #define CS_IDLE   1
 #define CS_ACTIVE 0
 
-#define RAW_ANGLE_MAX       16384.f
-#define RAW_ANGLE_2_RADIANS (M_2_PI / RAW_ANGLE_MAX)
+#define ANGLE_MAX    16384
+#define ANGLE_TO_DEG (360.f / ANGLE_MAX)
 
 ma730_dev_t ma730_init(spi_inst_t* spi, const uint8_t cs_pin) {
   // Initialize pins.
@@ -25,7 +25,7 @@ ma730_dev_t ma730_init(spi_inst_t* spi, const uint8_t cs_pin) {
 }
 
 float ma730_read_angle(ma730_dev_t* dev) {
-  if (!dev) DIAG_REPORT_INVALID_ARG();
+  if (!dev) INVALID_ARGS();
 
   const uint16_t cmd = 0x0000;
   uint16_t value     = 0x0000;
@@ -33,8 +33,7 @@ float ma730_read_angle(ma730_dev_t* dev) {
   gpio_put(dev->cs, CS_ACTIVE);
 
   if (2 != spi_write16_read16_blocking(dev->spi, &cmd, &value, 1)) {
-    diag_report_hardware(HARDWARE_STATUS_SPI_ERROR,
-                         "MA730 Failed to read angle");
+    FATAL_ERROR(TAG_SPI_ERROR, "MA730 Failed to read angle");
     return MA730_ANGLE_INVALID;
   }
 
@@ -44,10 +43,7 @@ float ma730_read_angle(ma730_dev_t* dev) {
   // Read 16 bits (1 bit padding + 14 bit data + 1 bit padding)
   const uint16_t raw_angle = (value >> 1) & 0x3FFF;
 
-  // Convert to radians.
-  const float local_angle = (float)raw_angle * RAW_ANGLE_2_RADIANS;
-
-  // Assign output.
-  return local_angle;
+  // Convert to degrees.
+  return (float)raw_angle * ANGLE_TO_DEG;
 }
-
+ 

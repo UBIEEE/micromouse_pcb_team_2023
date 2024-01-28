@@ -13,17 +13,16 @@ typedef struct ma730_dev ma730_dev_t;
 
 //
 // Initializes a MA730 encoder.
-// The program will exit if the device could not be initialized.
+// The program will halt if the device could not be initialized.
 //
-// Important: The SPI instance must be initialized prior to calling this.
+// Important: The SPI instance must be initialized prior to calling this!
 //
 ma730_dev_t ma730_init(spi_inst_t* spi, uint8_t cs_pin);
 
 //
-// Reads the angle from the encoder, in radians (0 to 2π).
+// Reads the angle from the encoder in degrees, [0, 360).
 //
-// The angle returned is set to MA730_ANGLE_INVALID if the angle could not be
-// read.
+// The program will panic if the angle could not be read.
 //
 float ma730_read_angle(ma730_dev_t* dev);
 

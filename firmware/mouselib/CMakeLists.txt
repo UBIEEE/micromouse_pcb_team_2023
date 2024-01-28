@@ -12,5 +12,7 @@ add_library(mouselib ${SRC})
 target_include_directories(mouselib PUBLIC ${INC_DIR})
 
 target_link_libraries(mouselib PUBLIC pico_stdlib
+                                      pico_multicore
                                       hardware_pwm
-                                      hardware_spi)
+                                      hardware_spi
+                                      hardware_irq)
