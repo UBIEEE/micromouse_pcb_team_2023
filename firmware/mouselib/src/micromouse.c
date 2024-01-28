@@ -14,16 +14,17 @@
 // ---
 //
 
-struct {
+struct micromouse_hardware {
   ma730_dev_t enc_left;
   ma730_dev_t enc_right;
 
   drv8835_dev_t drive;
 
   icm20602_dev_t imu;
-} s_hardware;
+};
+typedef struct micromouse_hardware micromouse_hardware_t;
 
-struct {
+struct micromouse_state {
   float enc_left_dist;
   float enc_right_dist;
 
@@ -35,7 +36,13 @@ struct {
 
   float imu_yaw_angle;
   float imu_yaw_vel;
-} s_state;
+};
+typedef struct micromouse_state micromouse_state_t;
+
+static micromouse_hardware_t s_hardware;
+
+static micromouse_state_t s_state;
+static mutex_t s_mutex; // Protects s_state.
 
 //
 // ---
@@ -121,6 +128,9 @@ void micromouse_init(void) {
   };
 
   s_hardware.imu = icm20602_init(spi0, PIN_IMU_CS, &imu_config);
+
+  // Mutex.
+  mutex_init(&s_mutex);
 }
 
 void micromouse_deinit(void) {
@@ -197,6 +207,16 @@ static void loop_end(const absolute_time_t begin_time,
 
 static void micromouse_fixed_update_primary(void) {
   // TODO: Logic and control...
+
+  // Aquire state.
+  micromouse_state_t state;
+  {
+    mutex_enter_blocking(&s_mutex);
+    state = s_state;
+    mutex_exit(&s_mutex);
+  }
+
+  (void)state;
 }
 
 //
@@ -211,34 +231,41 @@ static void micromouse_fixed_update_primary(void) {
 static float calc_encoder_delta_distance(float angle, float last_angle);
 
 static void micromouse_fixed_update_secondary(void) {
+  // The other core never edits the state, so no need to lock.
+  micromouse_state_t state = s_state;
+
   // IMU
   const float imu_yaw_vel =
       icm20602_read_gyro_axis(&s_hardware.imu, IMU_AXIS_YAW);
+
+  state.imu_yaw_vel = imu_yaw_vel;
+  state.imu_yaw_angle += imu_yaw_vel * LOOP_PERIOD_SECONDARY_MS;
 
   // Encoders
   const float enc_left_angle  = ma730_read_angle(&s_hardware.enc_left);
   const float enc_right_angle = ma730_read_angle(&s_hardware.enc_right);
 
-  // Update state.
-  // TODO: Mutex
-
-  s_state.imu_yaw_vel = imu_yaw_vel;
-  s_state.imu_yaw_angle += imu_yaw_vel * LOOP_PERIOD_SECONDARY_MS;
-
-  s_state.enc_left_angle  = enc_left_angle;
-  s_state.enc_right_angle = enc_right_angle;
-
   const float enc_left_delta_dist =
-      calc_encoder_delta_distance(enc_left_angle, s_state.enc_left_angle);
+      calc_encoder_delta_distance(enc_left_angle, state.enc_left_angle);
 
   const float enc_right_delta_dist =
-      calc_encoder_delta_distance(enc_right_angle, s_state.enc_right_angle);
+      calc_encoder_delta_distance(enc_right_angle, state.enc_right_angle);
 
-  s_state.enc_left_dist += enc_left_delta_dist;
-  s_state.enc_right_dist += enc_right_delta_dist;
+  state.enc_left_angle  = enc_left_angle;
+  state.enc_right_angle = enc_right_angle;
 
-  s_state.enc_left_vel  = enc_left_delta_dist / LOOP_PERIOD_SECONDARY_MS;
-  s_state.enc_right_vel = enc_right_delta_dist / LOOP_PERIOD_SECONDARY_MS;
+  state.enc_left_dist += enc_left_delta_dist;
+  state.enc_right_dist += enc_right_delta_dist;
+
+  state.enc_left_vel  = enc_left_delta_dist / LOOP_PERIOD_SECONDARY_MS;
+  state.enc_right_vel = enc_right_delta_dist / LOOP_PERIOD_SECONDARY_MS;
+
+  // Update state.
+  {
+    mutex_enter_blocking(&s_mutex);
+    s_state = state;
+    mutex_exit(&s_mutex);
+  }
 }
 
 static float calc_encoder_delta_distance(const float angle,
