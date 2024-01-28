@@ -15,10 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <hardware/irq.h>
 #include <hardware/pwm.h>
 #include <hardware/spi.h>
-#include <hardware/irq.h>
 #include <pico/multicore.h>
+#include <pico/mutex.h>
 #include <pico/stdlib.h>
 
 #pragma GCC diagnostic pop
