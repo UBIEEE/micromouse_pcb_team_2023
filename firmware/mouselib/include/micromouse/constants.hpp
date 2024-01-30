@@ -1,26 +1,20 @@
-#ifndef __MICROMOUSE_CONSTANTS_H__
-#define __MICROMOUSE_CONSTANTS_H__
+#pragma once
 
 //
 // --- Mouse hardware constants ---
 //
 
-#define CLOCK_FREQ_HZ 125000000
+#define CLOCK_FREQ_HZ 125'000'000
 
 // IMU max baud rate is 10MHz.
 // Encoder max baud rate is 25MHz.
-#define SPI0_BAUD_RATE (10 * 1000 * 1000) // 10MHz
+#define SPI0_BAUD_RATE_HZ 10'000'000 // 10MHz
 
 //
 // Meters traveled per encoder rotation.
 // TODO: Measure this.
 //
 #define METERS_PER_ROTATION 0.1f
-
-// The orientation of the IMU on the mouse.
-#define IMU_AXIS_YAW   ICM20602_AXIS_Z
-#define IMU_AXIS_ROLL  ICM20602_AXIS_Y
-#define IMU_AXIS_PITCH ICM20602_AXIS_X
 
 //
 // --- Mouse IO map ---
@@ -92,6 +86,7 @@
 
 // Primary loop, used for logic and control.
 #define LOOP_PERIOD_PRIMARY_MS 20
+#define LOOP_PERIOD_PRIMARY_S (LOOP_PERIOD_PRIMARY_MS / 1000.f)
 
 //
 // Secondary loop period, used for sampling sensors.
@@ -103,6 +98,4 @@
 // rotation...
 //
 #define LOOP_PERIOD_SECONDARY_MS 2
-
-#endif // __MICROMOUSE_CONSTANTS_H__
-
+#define LOOP_PERIOD_SECONDARY_S (LOOP_PERIOD_SECONDARY_MS / 1000.f)

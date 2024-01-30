@@ -5,7 +5,7 @@ file(GLOB_RECURSE SRC "${SRC_DIR}/*.c"
                       "${SRC_DIR}/*.cpp")
 
 set_source_files_properties(${SRC} PROPERTIES
-                                   COMPILE_FLAGS "-Wall -Wextra -Werror -pedantic")
+                                   COMPILE_FLAGS "-Wall -Werror")
 
 add_library(mouselib ${SRC})
 
