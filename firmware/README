@@ -1,5 +1,8 @@
 Firmware for the MicroMouse, running on the RP2040 microcontroller.
 
-The /mouselib/ directory contains code for the main mouse library. It contains code for all essential functionality.
+The /logic/ directory contains code for a library containing platform-independent logic functionality for the mouse. This library can be built to target desktop operating systems for testing purposes.
 
-The /programs/ directory contains code for various programs that can be run on the mouse. The program 'main' is the primary program for the mouse. The other programs are intended for testing purposes.
+The /control/ directory contains code for a library containing functionality to operate the mouse. This library can only be build to target the RP2040 because of its dependency on the Pico SDK. The control library is linked with the logic library. All remaining functionality that could not be implemented in the logic library should be implemented here, including the main control loop of the mouse firmware program.
+
+The /programs/ directory contains code for various programs that can be run on the RP2040. Each program is linked with the control library (which itself is linked with the logic library). The program 'main' is the primary program for the mouse. The other programs are intended for hardware testing, etc.
+

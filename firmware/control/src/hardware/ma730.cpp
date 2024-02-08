@@ -1,6 +1,6 @@
-#include <micromouse/hardware/ma730.hpp>
+#include <mouse_control/hardware/ma730.hpp>
 
-#include <micromouse/macros.hpp>
+#include <mouse_control/macros.hpp>
 
 using namespace hardware;
 

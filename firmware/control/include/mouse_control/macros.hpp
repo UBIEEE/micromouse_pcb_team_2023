@@ -1,6 +1,6 @@
 #pragma once
 
-#include <micromouse/picosdk.hpp>
+#include <mouse_control/picosdk.hpp>
 
 // Prints the current source location and a message, then halts execution.
 #define FATAL_ERROR(TAG, FMT, ...)                                             \

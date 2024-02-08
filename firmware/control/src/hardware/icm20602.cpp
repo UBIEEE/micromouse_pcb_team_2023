@@ -1,7 +1,7 @@
-#include <micromouse/hardware/icm20602.hpp>
+#include <mouse_control/hardware/icm20602.hpp>
 
-#include <micromouse/constants.hpp>
-#include <micromouse/macros.hpp>
+#include <mouse_control/constants.hpp>
+#include <mouse_control/macros.hpp>
 
 using namespace hardware;
 

@@ -25,7 +25,8 @@ function(build_program name)
 
   target_include_directories(${name} PRIVATE ${INC_DIR})
 
-  target_link_libraries(${name} mouselib)
+  # Link with control library and logic library.
+  target_link_libraries(${name} control)
 
   pico_enable_stdio_usb(${name} 1)
   pico_enable_stdio_uart(${name} 0)

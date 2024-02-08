@@ -1,7 +1,7 @@
 #pragma once
 
-#include <micromouse/picosdk.hpp>
-#include <micromouse/std.hpp>
+#include <mouse_control/picosdk.hpp>
+#include <mouse_control/std.hpp>
 
 namespace hardware {
 

@@ -1,7 +1,7 @@
-#include <micromouse/micromouse.hpp>
+#include <mouse_control/micromouse.hpp>
 
-#include <micromouse/constants.hpp>
-#include <micromouse/macros.hpp>
+#include <mouse_control/constants.hpp>
+#include <mouse_control/macros.hpp>
 
 #define FIFO_FLAG_INIT 123
 

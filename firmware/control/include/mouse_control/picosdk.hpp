@@ -1,6 +1,6 @@
 #pragma once
 
-#include <micromouse/std.hpp>
+#include <mouse_control/std.hpp>
 
 typedef struct spi_inst spi_inst_t;
 typedef struct spi_hw spi_hw_t;
