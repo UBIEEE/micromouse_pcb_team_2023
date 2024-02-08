@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(pico_sdk_import)
+option(DESKTOP_TESTING "Build for desktop testing" OFF)
+
+if(NOT DESKTOP_TESTING)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+  include(pico_sdk_import)
+endif()
 
 project(firmware)
 
@@ -22,21 +26,36 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release")
+  if(DESKTOP_TESTING)
+    set(CMAKE_BUILD_TYPE "Debug")
+  else()
+    set(CMAKE_BUILD_TYPE "Release")
+  endif()
+endif()
+
+if(DESKTOP_TESTING AND CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(WARNING "Building desktop testing in release mode is not allowed. Switching to debug mode.")
+  set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
-pico_sdk_init()
+if(NOT DESKTOP_TESTING)
+  pico_sdk_init()
+
+  if(NOT CMAKE_C_COMPILER_ID STREQUAL "GNU") # Shouldn't be a problem, but just in case...
+    message(FATAL_ERROR "Only GCC is supported.")
+  endif()
+endif()
 
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
 
-if(NOT CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  message(FATAL_ERROR "Only GCC is supported.")
-endif()
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/logic")
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/mouselib")
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/programs")
+if(NOT DESKTOP_TESTING)
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/control")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/programs")
+endif()

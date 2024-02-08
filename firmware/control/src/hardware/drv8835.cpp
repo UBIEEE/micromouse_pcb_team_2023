@@ -1,7 +1,7 @@
-#include <micromouse/hardware/drv8835.hpp>
+#include <mouse_control/hardware/drv8835.hpp>
 
-#include <micromouse/constants.hpp>
-#include <micromouse/macros.hpp>
+#include <mouse_control/constants.hpp>
+#include <mouse_control/macros.hpp>
 
 // Max is 250Hz
 static constexpr uint16_t DRV8835_FREQ_HZ = 200;

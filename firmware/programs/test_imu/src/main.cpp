@@ -1,5 +1,5 @@
-#include <micromouse/micromouse.hpp>
-#include <micromouse/constants.hpp>
+#include <mouse_control/micromouse.hpp>
+#include <mouse_control/constants.hpp>
 
 int main() {
   // Don't init the MicroMouse singleton, just setup the SPI instance.

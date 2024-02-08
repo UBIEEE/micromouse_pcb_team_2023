@@ -1,5 +1,5 @@
-#include <micromouse/picosdk.hpp>
-#include <micromouse/std.hpp>
+#include <mouse_control/picosdk.hpp>
+#include <mouse_control/std.hpp>
 
 int main() {
   if (!pico::stdio_init_all()) return 1;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <micromouse/picosdk.hpp>
-#include <micromouse/std.hpp>
+#include <mouse_control/picosdk.hpp>
+#include <mouse_control/std.hpp>
 
-#include <micromouse/hardware/ma730.hpp>
-#include <micromouse/hardware/drv8835.hpp>
-#include <micromouse/hardware/icm20602.hpp>
+#include <mouse_control/hardware/ma730.hpp>
+#include <mouse_control/hardware/drv8835.hpp>
+#include <mouse_control/hardware/icm20602.hpp>
 
 class MicroMouse {
   pico::spi_inst_t* m_spi;
