@@ -2,7 +2,22 @@ cmake_minimum_required(VERSION 3.5)
 
 option(DESKTOP_TESTING "Build for desktop testing" OFF)
 
-if(NOT DESKTOP_TESTING)
+if(DESKTOP_TESTING)
+  message(STATUS "~~~~~~~ Building for desktop testing ~~~~~~~")
+
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        f8d7d77
+  )
+
+  # For Windows: Prevent overriding the parent project's compiler/linker settings
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+  FetchContent_MakeAvailable(googletest)
+else()
+  message(STATUS "~~~~~~~ Building for mouse ~~~~~~~")
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   include(pico_sdk_import)
 endif()
