@@ -13,9 +13,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 //
 // Select C++ standard library stuff.
 //
 #include <queue>
+#include <span>
 
