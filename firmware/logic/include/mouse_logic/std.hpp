@@ -1,9 +1,6 @@
 #pragma once
 
-//
-// C standard library
-// Everything here is fair game performance-wise.
-//
+#include <cassert>
 #include <climits>
 #include <cmath>
 #include <cstdarg>
@@ -13,11 +10,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
 
-//
-// Select C++ standard library stuff.
-//
 #include <queue>
 #include <span>
-

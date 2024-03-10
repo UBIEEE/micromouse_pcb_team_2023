@@ -3,15 +3,17 @@
 #include <mouse_control/picosdk.hpp>
 #include <mouse_control/std.hpp>
 
-#include <mouse_control/hardware/ma730.hpp>
 #include <mouse_control/hardware/drv8835.hpp>
 #include <mouse_control/hardware/icm20602.hpp>
+#include <mouse_control/hardware/ma730.hpp>
 
 class MicroMouse {
   pico::spi_inst_t* m_spi;
 
+#if ODOMETRY_ENCODERS
   hardware::MA730 m_enc_left;
   hardware::MA730 m_enc_right;
+#endif
   hardware::DRV8835 m_motors;
   hardware::ICM20602 m_imu;
 
@@ -22,16 +24,14 @@ class MicroMouse {
     float enc_left_vel_mps  = 0.f;
     float enc_right_vel_mps = 0.f;
 
-    float enc_left_angle_deg;
-    float enc_right_angle_deg;
-
-    float imu_yaw_angle_deg;
-    float imu_yaw_rate_dps = 0.f;
+    float imu_yaw_angle_deg = 0.f;
+    float imu_yaw_rate_dps  = 0.f;
   };
 
   SensorData m_sensor_data;
   pico::Mutex m_sensor_data_mutex;
 
+private:
   MicroMouse();
 
 public:
@@ -75,12 +75,4 @@ private:
 
   // Core 1: Handles sensor reading.
   void secondary_fixed_update();
-
-  //
-  // Calculates the distance traveled since the last update based on the encoder's
-  // current angle its last angle.
-  // The angles should be represented in degrees, [0, 360].
-  //
-  static float calc_encoder_delta_distance(float angle, float last_angle);
 };
-

@@ -1,9 +1,12 @@
-#include <mouse_logic/maze.hpp>
+#include <mouse_logic/maze/maze.hpp>
 
 Maze::Maze() { init_boundaries(); }
 
 void Maze::reset() {
-  std::memset(m_cells, 0, sizeof(m_cells));
+  for (std::size_t i = 0; i < MAZE_CELLS; ++i) {
+    m_cells[i].reset();
+  }
+
   init_boundaries();
 }
 
@@ -20,7 +23,7 @@ void Maze::init_start_cell(StartLocation start_location) {
 void Maze::init_boundaries() {
   using enum Direction;
 
-  for (uint8_t i = 0; i < MAZE_WIDTH; ++i) {
+  for (uint8_t i = 0; i < MAZE_WIDTH; ++i) { // O(n)
     // (0,0) -> (15,0) have south wall.
     m_cells[i].set_wall(SOUTH);
     // (0,15) -> (15,15) have north wall.
@@ -32,7 +35,7 @@ void Maze::init_boundaries() {
   }
 }
 
-void Maze::cell_set_wall(MazeCoordinate coord, Direction dir, bool present) {
+void Maze::set_wall(Coordinate coord, Direction dir, bool present) {
   m_cells[coord].set_wall(dir, present);
 
   Cell* neighbor = get_neighbor_cell(coord, dir);
@@ -41,7 +44,7 @@ void Maze::cell_set_wall(MazeCoordinate coord, Direction dir, bool present) {
   }
 }
 
-Cell* Maze::get_neighbor_cell(MazeCoordinate coord, Direction direction) {
+Cell* Maze::get_neighbor_cell(Coordinate coord, Direction direction) {
   int8_t x = coord.x();
   int8_t y = coord.y();
 
@@ -63,6 +66,5 @@ Cell* Maze::get_neighbor_cell(MazeCoordinate coord, Direction direction) {
 
   if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_WIDTH) return nullptr;
 
-  return &m_cells[MazeCoordinate(x, y)];
+  return &m_cells[Coordinate(x, y)];
 }
-
