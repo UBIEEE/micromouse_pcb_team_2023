@@ -9,9 +9,10 @@ class MA730 {
   pico::spi_inst_t* m_spi;
   const uint8_t m_cs_pin;
 
-public:
-  static constexpr float INVALID_ANGLE = -1.f;
+  float m_last_angle = 0;
+  float m_rotations  = 0.f;
 
+public:
   //
   // Initializes a MA730 encoder.
   // The program will halt if the device could not be initialized.
@@ -20,12 +21,31 @@ public:
   //
   MA730(pico::spi_inst_t* spi, uint8_t cs_pin);
 
+  struct Data {
+    float distance; // rotations
+    float velocity; // rotations per second
+
+    Data apply_coefficient(const float& coefficient) const {
+      return Data {distance * coefficient, velocity * coefficient};
+    }
+  };
+
   //
-  // Reads the angle from the encoder in degrees, [0, 360).
-  // The program will halt if the angle could not be read.
+  // Reads the accumulated rotations and the velocity of the encoder.
+  // dt is the time since the last call to read (in seconds).
   //
-  float read_angle() const;
+  Data read(const float& dt);
+
+  //
+  // Resets the accumulated rotations.
+  //
+  void reset() { m_rotations = 0.f; }
+
+private:
+  //
+  // Reads the 14-bit angle from the encoder [0, 16384).
+  //
+  uint16_t read_angle_raw() const;
 };
 
 } // namespace hardware
-

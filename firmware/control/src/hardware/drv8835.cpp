@@ -69,17 +69,19 @@ void DRV8835::stop() {
 
 void DRV8835::set_duty_cycle(unsigned slice_num, unsigned channel,
                              uint16_t duty) {
-  uint32_t divider16 = CLOCK_FREQ_HZ / DRV8835_FREQ_HZ / 4096 +
-                       (CLOCK_FREQ_HZ % (DRV8835_FREQ_HZ * 4096) != 0);
+
+  uint32_t divider16 =
+      Constants::Hardware::CLOCK_FREQ_HZ / DRV8835_FREQ_HZ / 4096 +
+      (Constants::Hardware::CLOCK_FREQ_HZ % (DRV8835_FREQ_HZ * 4096) != 0);
 
   if (divider16 / 16 == 0) {
     divider16 = 16;
   }
 
-  const uint32_t wrap = CLOCK_FREQ_HZ * 16 / divider16 / DRV8835_FREQ_HZ - 1;
+  const uint32_t wrap =
+      Constants::Hardware::CLOCK_FREQ_HZ * 16 / divider16 / DRV8835_FREQ_HZ - 1;
 
   pico::pwm_set_clkdiv_int_frac(slice_num, divider16 / 16, divider16 & 0xF);
   pico::pwm_set_wrap(slice_num, wrap);
   pico::pwm_set_chan_level(slice_num, channel, wrap * duty / 100);
 }
-

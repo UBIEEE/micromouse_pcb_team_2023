@@ -1,3 +1,10 @@
+option(ODOMETRY_DEAD_RECKONING "Use dead reckoning for pose estimation (instead of using encoder distances)" OFF)
+if(ODOMETRY_DEAD_RECKONING)
+  add_definitions(-DODOMETRY_DEAD_RECKONING=1)
+else()
+  add_definitions(-DODOMETRY_ENCODERS=1)
+endif()
+
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 

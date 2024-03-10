@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <mouse_logic/maze.hpp>
+#include <mouse_logic/maze/maze.hpp>
 
 TEST(Maze, TestDirection) {
   using enum Direction;
@@ -24,23 +24,23 @@ TEST(Maze, TestDirection) {
 }
 
 TEST(Maze, TestCoordinate) {
-  MazeCoordinate coord(7, 7);
+  Coordinate coord(7, 7);
   ASSERT_EQ(7, coord.x());
   ASSERT_EQ(7, coord.y());
 
-  MazeCoordinate coord2(7, 7);
+  Coordinate coord2(7, 7);
   ASSERT_EQ(coord, coord2);
 
-  MazeCoordinate coord3(8, 7);
+  Coordinate coord3(8, 7);
   ASSERT_NE(coord, coord3);
 
-  MazeCoordinate coord4(0, 0);
+  Coordinate coord4(0, 0);
   ASSERT_EQ(0x00, coord4);
 
-  MazeCoordinate coord5(15, 15);
+  Coordinate coord5(15, 15);
   ASSERT_EQ(0xFF, coord5);
 
-  MazeCoordinate coord6(7, 8);
+  Coordinate coord6(7, 8);
   ASSERT_EQ(0x87, coord6);
 }
 
@@ -51,7 +51,7 @@ TEST(Maze, TestInit) {
 
   for (uint8_t x = 0; x < MAZE_WIDTH; ++x) {
     for (uint8_t y = 0; y < MAZE_WIDTH; ++y) {
-      const Cell& cell = maze[MazeCoordinate(x, y)];
+      const Cell& cell = maze[Coordinate(x, y)];
 
       const bool is_west = (x == 0);
       ASSERT_EQ(is_west, cell.is_wall(WEST));
@@ -75,10 +75,10 @@ TEST(Maze, TestInitStartCell) {
   Maze maze;
 
   maze.init_start_cell(WEST_OF_GOAL);
-  ASSERT_TRUE(maze[MazeCoordinate(0, 0)].is_wall(EAST));
+  ASSERT_TRUE(maze[Coordinate(0, 0)].is_wall(EAST));
 
   maze.init_start_cell(EAST_OF_GOAL);
-  ASSERT_TRUE(maze[MazeCoordinate(15, 0)].is_wall(WEST));
+  ASSERT_TRUE(maze[Coordinate(15, 0)].is_wall(WEST));
 }
 
 TEST(Maze, TestReset) {
@@ -87,7 +87,7 @@ TEST(Maze, TestReset) {
   const Maze empty_maze;
 
   Maze maze;
-  maze.cell_set_wall(MazeCoordinate(7, 7), NORTH);
+  maze.set_wall(Coordinate(7, 7), NORTH);
   ASSERT_NE(empty_maze, maze);
 
   maze.reset();
@@ -184,19 +184,19 @@ TEST(Maze, TestGetNeighborCell) {
 
   Maze maze;
 
-  Cell* neighbor = maze.get_neighbor_cell(MazeCoordinate(7, 7), NORTH);
-  ASSERT_EQ(&maze[MazeCoordinate(7, 8)], neighbor);
+  Cell* neighbor = maze.get_neighbor_cell(Coordinate(7, 7), NORTH);
+  ASSERT_EQ(&maze[Coordinate(7, 8)], neighbor);
 
-  neighbor = maze.get_neighbor_cell(MazeCoordinate(7, 7), EAST);
-  ASSERT_EQ(&maze[MazeCoordinate(8, 7)], neighbor);
+  neighbor = maze.get_neighbor_cell(Coordinate(7, 7), EAST);
+  ASSERT_EQ(&maze[Coordinate(8, 7)], neighbor);
 
-  neighbor = maze.get_neighbor_cell(MazeCoordinate(7, 7), SOUTH);
-  ASSERT_EQ(&maze[MazeCoordinate(7, 6)], neighbor);
+  neighbor = maze.get_neighbor_cell(Coordinate(7, 7), SOUTH);
+  ASSERT_EQ(&maze[Coordinate(7, 6)], neighbor);
 
-  neighbor = maze.get_neighbor_cell(MazeCoordinate(7, 7), WEST);
-  ASSERT_EQ(&maze[MazeCoordinate(6, 7)], neighbor);
+  neighbor = maze.get_neighbor_cell(Coordinate(7, 7), WEST);
+  ASSERT_EQ(&maze[Coordinate(6, 7)], neighbor);
 
-  neighbor = maze.get_neighbor_cell(MazeCoordinate(0, 0), WEST);
+  neighbor = maze.get_neighbor_cell(Coordinate(0, 0), WEST);
   ASSERT_EQ(nullptr, neighbor);
 }
 
@@ -205,20 +205,20 @@ TEST(Maze, TestSetWall) {
 
   Maze maze;
 
-  maze.cell_set_wall(MazeCoordinate(7, 7), NORTH);
-  ASSERT_TRUE(maze[MazeCoordinate(7, 7)].is_wall(NORTH));
-  ASSERT_TRUE(maze[MazeCoordinate(7, 8)].is_wall(SOUTH));
+  maze.set_wall(Coordinate(7, 7), NORTH);
+  ASSERT_TRUE(maze[Coordinate(7, 7)].is_wall(NORTH));
+  ASSERT_TRUE(maze[Coordinate(7, 8)].is_wall(SOUTH));
 
-  maze.cell_set_wall(MazeCoordinate(7, 7), EAST);
-  ASSERT_TRUE(maze[MazeCoordinate(7, 7)].is_wall(EAST));
-  ASSERT_TRUE(maze[MazeCoordinate(8, 7)].is_wall(WEST));
+  maze.set_wall(Coordinate(7, 7), EAST);
+  ASSERT_TRUE(maze[Coordinate(7, 7)].is_wall(EAST));
+  ASSERT_TRUE(maze[Coordinate(8, 7)].is_wall(WEST));
 
-  maze.cell_set_wall(MazeCoordinate(7, 7), SOUTH);
-  ASSERT_TRUE(maze[MazeCoordinate(7, 7)].is_wall(SOUTH));
-  ASSERT_TRUE(maze[MazeCoordinate(7, 6)].is_wall(NORTH));
+  maze.set_wall(Coordinate(7, 7), SOUTH);
+  ASSERT_TRUE(maze[Coordinate(7, 7)].is_wall(SOUTH));
+  ASSERT_TRUE(maze[Coordinate(7, 6)].is_wall(NORTH));
 
-  maze.cell_set_wall(MazeCoordinate(7, 7), WEST);
-  ASSERT_TRUE(maze[MazeCoordinate(7, 7)].is_wall(WEST));
-  ASSERT_TRUE(maze[MazeCoordinate(6, 7)].is_wall(EAST));
+  maze.set_wall(Coordinate(7, 7), WEST);
+  ASSERT_TRUE(maze[Coordinate(7, 7)].is_wall(WEST));
+  ASSERT_TRUE(maze[Coordinate(6, 7)].is_wall(EAST));
 }
 

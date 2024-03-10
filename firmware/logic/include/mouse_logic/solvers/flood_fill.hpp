@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mouse_logic/maze.hpp>
+#include <mouse_logic/maze/maze.hpp>
 #include <mouse_logic/std.hpp>
 
 class FloodFillSolver {
@@ -10,6 +10,6 @@ public:
   FloodFillSolver(Maze& maze)
     : m_maze(maze) {}
 
-  void solve(std::span<MazeCoordinate> endpoints);
+  void solve(std::span<Coordinate> endpoints);
 };
 
