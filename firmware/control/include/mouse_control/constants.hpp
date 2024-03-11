@@ -58,6 +58,8 @@ struct Constants {
     CONSTANT int LED_4 = 24;
     CONSTANT int LED_5 = 25;
 
+    CONSTANT int LEDS[] = {LED_1, LED_2, LED_3, LED_4, LED_5};
+
     CONSTANT int ADC_0 = 26;
     CONSTANT int ADC_1 = 27;
     CONSTANT int ADC_2 = 28;
@@ -74,6 +76,8 @@ struct Constants {
     CONSTANT int LOOP_PERIOD_PRIMARY_MS  = 20;
     CONSTANT float LOOP_PERIOD_PRIMARY_S = LOOP_PERIOD_PRIMARY_MS / 1000.f;
 
+    CONSTANT int LOOP_FREQ_PRIMARY_HZ = 1000 / LOOP_PERIOD_PRIMARY_MS;
+
     //
     // Secondary loop period, used for sampling sensors.
     //
@@ -85,6 +89,8 @@ struct Constants {
     //
     CONSTANT int LOOP_PERIOD_SECONDARY_MS  = 2;
     CONSTANT float LOOP_PERIOD_SECONDARY_S = LOOP_PERIOD_SECONDARY_MS / 1000.f;
+
+    CONSTANT int LOOP_FREQ_SECONDARY_HZ = 1000 / LOOP_PERIOD_SECONDARY_MS;
   };
 
 #undef CONSTANT
